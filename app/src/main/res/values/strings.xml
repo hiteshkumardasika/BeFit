@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">BeFit</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="one">ONE</string>
+    <string name="two">TWO</string>
+    <string name="three">THREE</string>
+
+    <string name="social">SOCIAL</string>
+    <string name="rewards">REWARDS</string>
+    <string name="progress">PROGRESS</string>
+
+</resources>
