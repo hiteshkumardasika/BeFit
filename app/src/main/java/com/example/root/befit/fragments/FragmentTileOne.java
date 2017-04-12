@@ -5,7 +5,7 @@ package com.example.root.befit.fragments;
  */
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import com.example.root.befit.R;
 
 
-public class FragmentTileOne extends Fragment{
+public class FragmentTileOne extends Fragment {
 
     public FragmentTileOne() {
         // Required empty public constructor

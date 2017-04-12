@@ -12,8 +12,8 @@ import java.util.Locale;
 
 import api.exceptions.MissingScopesException;
 import api.exceptions.TokenExpiredException;
-import api.loaders.ResourceLoaderFactory;
 import api.loaders.ResourceLoaderResult;
+import api.loaders.ResourceLoaderFactory;
 import api.models.DailyActivitySummary;
 
 /**
