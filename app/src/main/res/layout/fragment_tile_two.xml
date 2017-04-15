@@ -5,31 +5,176 @@
     android:layout_height="match_parent"
     tools:context="com.example.root.befit.fragments.FragmentTileOne">
 
-    <TextView
-        android:id="@+id/textPercentage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="40sp"/>
-
-
-    <com.hookedonplay.decoviewlib.DecoView
-        xmlns:custom="http://schemas.android.com/apk/res-auto"
-        custom:dv_lineWidth="46dp"
-        android:id="@+id/dynamicArcView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layoutActivities">
 
-<!--
-    <TextView
+        <com.hookedonplay.decoviewlib.DecoView
+            xmlns:custom="http://schemas.android.com/apk/res-auto"
+            custom:dv_lineWidth="26dp"
+            android:id="@+id/dynamicArcView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="21dp"
+            android:layout_marginEnd="21dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=""
+            android:textSize="40sp"
+            android:id="@+id/textPercentage"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/textRemaining"
+            android:layout_below="@+id/textPercentage"
+            android:layout_centerHorizontal="true"
+            android:maxWidth="200dp" />
+
+    </RelativeLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/progress"
-        android:textSize="40dp"
-        android:textStyle="bold"
-        android:layout_centerInParent="true"/>
--->
+        android:id="@+id/layoutActivities"
+        android:padding="4dp"
+        android:layout_marginBottom="88dp"
+        android:layout_alignParentBottom="true">
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/bikeActivity1"
+            android:src="@drawable/ic_activity1"
+            android:background="@drawable/circle_activity1"
+            android:contentDescription="@string/fit_cycling"
+            android:padding="16dp"
+            android:maxWidth="80dp"
+            android:maxHeight="80dp"
+            android:adjustViewBounds="true"
+            android:layout_marginStart="11dp"
+            android:layout_weight ="0.20"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textActivity1"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/bikeActivity1"
+            android:layout_toEndOf="@+id/bikeActivity1"
+            android:layout_marginEnd="21dp"/>
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/runActivity2"
+            android:src="@drawable/ic_activity2"
+            android:background="@drawable/circle_activity2"
+            android:padding="16dp"
+            android:maxWidth="80dp"
+            android:maxHeight="80dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/fit_running"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textActivity1"
+            android:layout_weight ="0.20"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textActivity2"
+            android:layout_centerVertical="true"
+            android:layout_below="@+id/textActivity1"
+            android:layout_toEndOf="@+id/runActivity2"
+            android:layout_marginEnd="21dp" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/walkActivity3"
+            android:src="@drawable/walking"
+            android:background="@drawable/circle_activity3"
+            android:maxWidth="75dp"
+            android:maxHeight="75dp"
+            android:adjustViewBounds="true"
+            android:padding="16dp"
+            android:contentDescription="@string/fit_walking"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textActivity2"
+            android:layout_weight ="0.20"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textActivity3"
+            android:layout_centerVertical="true"
+            android:layout_below="@+id/textActivity2"
+            android:layout_toEndOf="@+id/walkActivity3"
+            android:layout_marginEnd="21dp" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/calActivity4"
+            android:src="@drawable/burnt"
+            android:background="@drawable/circle_activity4"
+            android:padding="16dp"
+            android:maxWidth="80dp"
+            android:maxHeight="80dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/fit_burnt"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textActivity3"
+            android:layout_weight ="0.20"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textActivity4"
+            android:layout_centerVertical="true"
+            android:layout_below="@+id/textActivity3"
+            android:layout_toEndOf="@+id/walkActivity3"
+            android:layout_marginEnd="21dp" />
+
+        <ImageView
+            android:id="@+id/sumActivity5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textActivity4"
+            android:layout_weight="0.20"
+            android:adjustViewBounds="true"
+            android:background="@drawable/circle_activity5"
+            android:contentDescription="@string/fit_sum"
+            android:maxHeight="80dp"
+            android:maxWidth="80dp"
+            android:padding="16dp"
+            android:src="@drawable/sum" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/textActivity5"
+            android:layout_centerVertical="true"
+            android:layout_below="@+id/textActivity4"
+            android:layout_toEndOf="@+id/calActivity4"
+            android:layout_marginEnd="11dp" />
+
+    </LinearLayout>
 
 </RelativeLayout>

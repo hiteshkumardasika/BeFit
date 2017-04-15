@@ -35,6 +35,11 @@
     <string name="error_loading_data">Error loading data. Check your internet connection and try
         again later.
     </string>
+    <string name="fit_running">Running</string>
+    <string name="fit_cycling">Cycling</string>
+    <string name="fit_walking">Walking</string>
+    <string name="fit_burnt">burnt</string>
+    <string name="fit_sum">Total</string>
 
 
 </resources>

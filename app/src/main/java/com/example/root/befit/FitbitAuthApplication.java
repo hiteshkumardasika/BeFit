@@ -40,7 +40,7 @@ public class FitbitAuthApplication extends Application {
      * your application they'll have access to this key, and access to your user's authentication token
      */
     //!! THIS SHOULD BE IN AN ANDROID KEYSTORE!! See https://developer.android.com/training/articles/keystore.html
-    private static final String SECURE_KEY = "OZg0Q1vfP5b0GKg9a8QaMQ7S7FcIcHZ1sfxorrE2RuQ=";
+    private static final String SECURE_KEY = "Jr44s6sJxict89ojRxbq5MOXOOqfutU05J4ePQVYyeI=";
 
     /**
      * This method sets up the authentication config needed for
