@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.root.befit.fragments.FragmentTileFour;
 import com.example.root.befit.fragments.FragmentTileOne;
 import com.example.root.befit.fragments.FragmentTileThree;
 import com.example.root.befit.fragments.FragmentTileTwo;
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity
         adapter.addFragment(new FragmentTileOne(), "rewards");
         adapter.addFragment(new FragmentTileTwo(), "progress");
         adapter.addFragment(new FragmentTileThree(), "social");
+        adapter.addFragment(new FragmentTileFour(), "calendar");
         viewPager.setAdapter(adapter);
     }
 

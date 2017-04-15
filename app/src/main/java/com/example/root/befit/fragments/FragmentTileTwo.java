@@ -4,9 +4,17 @@ package com.example.root.befit.fragments;
  * Created by root on 3/30/17.
  */
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +29,7 @@ import java.util.Date;
 
 import android.content.Loader;
 import android.app.LoaderManager;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -91,7 +100,7 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
     public void loadData(DailyActivitySummary data) {
         final Summary summary = data.getSummary();
         final Goals goals = data.getGoals();
-        Toast.makeText(getActivity(), "Calories burnt" + summary.getCaloriesOut()+" goal was"+goals.getCaloriesOut(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), "Calories burnt" + summary.getCaloriesOut() + " goal was" + goals.getCaloriesOut(), Toast.LENGTH_LONG).show();
         final SeriesItem seriesItem = new SeriesItem.Builder(Color.parseColor("#FFFF8800"))
                 .setRange(0, summary.getCaloriesOut(), 0)
                 .build();
@@ -117,9 +126,41 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
                 .setIndex(i)
                 .setDelay(5000)
                 .build());
+        createNotification(summary.getCaloriesOut(), goals.getCaloriesOut());
 
     }
 
+    public void createNotification(int burnedCalories, int targetCalories) {
+        Intent intent = new Intent(getContext(), FragmentTileTwo.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Bitmap bmpImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.fitbit);
+        NotificationCompat.BigPictureStyle bpS = new NotificationCompat.BigPictureStyle().bigPicture(bmpImage);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext())
+                // Set Icon
+                .setSmallIcon(R.drawable.fitbit)
+                // Set Ticker Message
+                .setTicker("Testing")
+                // Dismiss Notification
+                .setAutoCancel(true)
+                .addAction(R.drawable.gym, "Next", pendingIntent)
+                .setStyle(bpS);
+        // Set PendingIntent into Notification
+        //.setContentIntent(pendingIntent);
+        RemoteViews notificationView = new RemoteViews(getContext().getPackageName(), R.layout.status_bar);
+        RemoteViews bigNotificationView = new RemoteViews(getContext().getPackageName(), R.layout.status_bar_expanded);
+
+        builder.setContent(getComplexNotificationView("CALORIES BURNT", String.valueOf(burnedCalories), notificationView));
+        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        builder.setCustomBigContentView(bigNotificationView);
+        Notification notification = builder.build();
+        notificationManager.notify(1, notification);
+    }
+
+    private RemoteViews getComplexNotificationView(String contentTitle, String contentText, RemoteViews notificationView) {
+        notificationView.setTextViewText(R.id.title, contentTitle);
+        notificationView.setTextViewText(R.id.text, contentText);
+        return notificationView;
+    }
 
     @Override
     public void onLoaderReset(Loader<ResourceLoaderResult<DailyActivitySummary>> loader) {
