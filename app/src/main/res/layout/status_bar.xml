@@ -17,7 +17,7 @@
         android:background="@drawable/status_bg"
         android:scaleType="center"
         android:src="@drawable/gym"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <LinearLayout
         android:layout_width="0dp"

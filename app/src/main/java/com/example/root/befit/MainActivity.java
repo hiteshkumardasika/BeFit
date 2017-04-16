@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private int[] tabIcons = {R.drawable.rewards, R.drawable.progress, R.drawable.social};
+    private int[] tabIcons = {R.drawable.rewards, R.drawable.progress, R.drawable.social,R.drawable.calendar};
 
     public static Intent newIntent(Context context) {
         return new Intent(context, MainActivity.class);
