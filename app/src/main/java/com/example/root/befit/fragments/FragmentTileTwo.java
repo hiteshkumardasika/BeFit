@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.root.befit.R;
+import com.example.root.befit.activites.BeFitActivites;
 import com.hookedonplay.decoviewlib.DecoView;
 import com.hookedonplay.decoviewlib.charts.EdgeDetail;
 import com.hookedonplay.decoviewlib.charts.SeriesItem;
@@ -60,7 +61,7 @@ import api.services.ActivityStepsIntraDayService;
 public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
     DecoView decoView;
-    TextView textView;
+    TextView textView, textViewGoals;
     ImageButton refreshButton;
     ImageView bikeImage, runImage, walkImage, calImage, sumImage;
 
@@ -75,13 +76,19 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     private static final int RUN_INDEX = 1;
     private static final int WALK_INDEX = 2;
     private static final int CAL_INDEX = 3;
+    BeFitActivites goals;
+
+    private boolean sumDisplayed;
 
     DailyActivitySummary data;
     ActivityStepsIntra stepsIntraData;
     ActivityDistanceIntra distanceIntra;
     ActivityCaloriesIntra caloriesIntra;
 
-    String format = "%.0f%%";
+    String formatPercent = "%.0f%%";
+    String formatDistance = "%.2f km";
+    String formatCal = "%.0f cal";
+    String formatCal2 = "%.0f";
 
     final private int[] activityColors = {
             Color.parseColor("#FFFF8800"),
@@ -91,8 +98,10 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
             Color.parseColor("#C3C4C2"),
     };
 
-    SeriesItem bike, run, walk, cal;
+    SeriesItem bike, run, walk, cal, sum;
+    SeriesItem bikeI, runI, walkI, calI;
     SeriesItem background, background2, background3, background4;
+    TextView[] activityTexts;
     //For Intra Day Steps
     private LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityStepsIntra>> intraStepsLoaderCallbacks =
             new LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityStepsIntra>>() {
@@ -227,31 +236,44 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        goals = new BeFitActivites(10,5,2,3303,(10+5+2+3303));
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        sumDisplayed = false;
+
         View view = inflater.inflate(R.layout.fragment_tile_two, container, false);
+        activityTexts = new TextView[5];
+
         decoView = (DecoView) view.findViewById(R.id.dynamicArcView);
         textView = (TextView) view.findViewById(R.id.textPercentage);
+        textViewGoals = (TextView) view.findViewById(R.id.textRemaining);
         refreshButton = (ImageButton) view.findViewById(R.id.refreshButton);
 
         bikeImage = (ImageView) view.findViewById(R.id.bikeActivity1);
         bikeImage.setOnClickListener(this);
+        activityTexts[BIKE_INDEX] = (TextView) view.findViewById(R.id.textActivity1);
 
         sumImage = (ImageView) view.findViewById(R.id.sumActivity5);
         sumImage.setOnClickListener(this);
 
         runImage = (ImageView) view.findViewById(R.id.runActivity2);
         runImage.setOnClickListener(this);
+        activityTexts[RUN_INDEX] = (TextView) view.findViewById(R.id.textActivity2);
 
         walkImage = (ImageView) view.findViewById(R.id.walkActivity3);
         walkImage.setOnClickListener(this);
+        activityTexts[WALK_INDEX] = (TextView) view.findViewById(R.id.textActivity3);
 
         calImage = (ImageView) view.findViewById(R.id.calActivity4);
         calImage.setOnClickListener(this);
+        activityTexts[CAL_INDEX] = (TextView) view.findViewById(R.id.textActivity4);
 
+        createArcs();
+        addArcListners();
         getLoaderManager().initLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks).forceLoad();
         getLoaderManager().initLoader(INTRA_DAY_STEPS_LOADER_ID, null, intraStepsLoaderCallbacks).forceLoad();
         getLoaderManager().initLoader(INTRA_DAY_DISTANCE_LOADER_ID, null, intraDistanceLoaderCallBacks).forceLoad();
@@ -268,7 +290,18 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
     }
 
-    public void createArcsForSum() {
+    public void computeActivityValues() {
+        List<Distance> distances = data.getSummary().getDistances();
+
+        for (Distance distance : distances) {
+            if (distance.getActivity().equals("Walk")) {
+                System.out.println(distance.getDistance());
+            }
+        }
+
+    }
+
+    public void createArcs() {
 
         decoView.deleteAll();
         decoView.configureAngles(280, 0);
@@ -316,11 +349,46 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                 .setInset(new PointF(240f, 240f))
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
+
+        sum = new SeriesItem.Builder(activityColors[BIKE_INDEX])
+                .setRange(0, goals.sum, 0)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .setInitialVisibility(false)
+                .build();
+
+        //For non-inner arcs
+        bikeI = new SeriesItem.Builder(activityColors[BIKE_INDEX])
+                .setRange(0, goals.bike, 0)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .build();
+
+        runI = new SeriesItem.Builder(activityColors[RUN_INDEX])
+                .setRange(0, goals.run, 0)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .build();
+
+        walkI = new SeriesItem.Builder(activityColors[WALK_INDEX])
+                .setRange(0, goals.walk, 0)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .build();
+
+        calI = new SeriesItem.Builder(activityColors[CAL_INDEX])
+                .setRange(0, goals.cal, 0)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .build();
+
     }
 
     public void loadData(DailyActivitySummary data) {
         this.data = data;
-        sumAction();
+
+        if (sumDisplayed == false) {
+            sumAction();
+            sumDisplayed = true;
+            computeActivityValues();
+
+        }
+        createNotification(data.getSummary().getCaloriesOut(), data.getGoals().getCaloriesOut());
     }
 
     public void loadStepsIntraDayData(ActivityStepsIntraDay activityStepsIntraDay) {
@@ -352,40 +420,37 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
 
     public void sumAction() {
-        createArcsForSum();
         //Compute calories percentage
         final Summary summary = data.getSummary();
-        final Goals goals = data.getGoals();
-        double calBurnt = summary.getCaloriesOut();
-        double calGoal = goals.getCaloriesOut();
-        int caloriesPercentage = (int) ((calBurnt / calGoal) * 100);
+        final float calBurnt = summary.getCaloriesOut();
 
         decoView.addSeries(background);
         decoView.addSeries(background2);
-        decoView.addSeries(background3);
-        decoView.addSeries(background4);
         int bikeIndex = decoView.addSeries(bike);
         int runIndex = decoView.addSeries(run);
         int walkIndex = decoView.addSeries(walk);
         int calIndex = decoView.addSeries(cal);
+        int sumIndex = decoView.addSeries(sum);
 
-        decoView.addEvent(new DecoEvent.Builder(caloriesPercentage).setIndex(bikeIndex).setDelay(1000).build());
-        decoView.addEvent(new DecoEvent.Builder(50).setIndex(runIndex).setDelay(2000).build());
-        decoView.addEvent(new DecoEvent.Builder(80).setIndex(walkIndex).setDelay(3000).build());
-        decoView.addEvent(new DecoEvent.Builder(30).setIndex(calIndex).setDelay(4000).build());
+        decoView.addEvent(new DecoEvent.Builder(5).setIndex(bikeIndex).setDelay(1000).build());
+        decoView.addEvent(new DecoEvent.Builder((float) (calBurnt + 5 + 0.5 + 0.2)).setIndex(sumIndex).setDelay(500).build());
+        decoView.addEvent(new DecoEvent.Builder(0.5f).setIndex(runIndex).setDelay(2000).build());
+        decoView.addEvent(new DecoEvent.Builder(0.2f).setIndex(walkIndex).setDelay(3000).build());
+        decoView.addEvent(new DecoEvent.Builder(calBurnt).setIndex(calIndex).setDelay(4000).build());
+    }
 
-        //Toast toast = Toast.makeText(this.getContext(), data.+" activites", Toast.LENGTH_LONG);
-        //toast.show();
-
+    public void addArcListners() {
         bike.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
             @Override
             public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
-                if (format.contains("%%")) {
-                    float percentFilled = ((currentPosition - bike.getMinValue()) / (bike.getMaxValue() - bike.getMinValue()));
-                    textView.setText(String.format(format, percentFilled * 100f));
+                if (formatDistance.contains("km")) {
+                    activityTexts[BIKE_INDEX].setTextSize(12);
+                    activityTexts[BIKE_INDEX].setText(String.format(formatDistance, currentPosition));
+
                 } else {
-                    textView.setText(String.format(format, currentPosition));
+                    activityTexts[BIKE_INDEX].setText(String.format(formatDistance, currentPosition));
                 }
+
             }
 
             @Override
@@ -393,60 +458,255 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
             }
         });
-        createNotification(calBurnt, calGoal);
+
+        bikeI.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+                if (formatPercent.contains("%%")) {
+                    float percentFilled = ((currentPosition - bikeI.getMinValue()) / (bikeI.getMaxValue() - bikeI.getMinValue()));
+                    textView.setText(String.format(formatPercent, percentFilled * 100f));
+
+                } else {
+                    textView.setText(String.format(formatPercent, currentPosition));
+                }
+
+                if (formatDistance.contains("km")) {
+                    activityTexts[BIKE_INDEX].setTextSize(12);
+                    activityTexts[BIKE_INDEX].setText(String.format(formatDistance, currentPosition));
+
+                } else {
+                    activityTexts[BIKE_INDEX].setText(String.format(formatDistance, currentPosition));
+                }
+
+                textViewGoals.setText(String.format(formatDistance, currentPosition) + "/" + Float.toString(bikeI.getMaxValue()) + " km");
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+
+        run.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+                if (formatDistance.contains("km")) {
+                    activityTexts[RUN_INDEX].setTextSize(12);
+                    activityTexts[RUN_INDEX].setText(String.format(formatDistance, currentPosition));
+
+                } else {
+                    activityTexts[RUN_INDEX].setText(String.format(formatDistance, currentPosition));
+                }
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+
+        runI.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+                if (formatPercent.contains("%%")) {
+                    float percentFilled = ((currentPosition - runI.getMinValue()) / (runI.getMaxValue() - runI.getMinValue()));
+                    textView.setText(String.format(formatPercent, percentFilled * 100f));
+
+                } else {
+                    textView.setText(String.format(formatPercent, currentPosition));
+                }
+
+                if (formatDistance.contains("km")) {
+                    activityTexts[RUN_INDEX].setTextSize(12);
+                    activityTexts[RUN_INDEX].setText(String.format(formatDistance, currentPosition));
+
+                } else {
+                    activityTexts[RUN_INDEX].setText(String.format(formatDistance, currentPosition));
+                }
+
+                textViewGoals.setText(String.format(formatDistance, currentPosition) + "/" + Float.toString(runI.getMaxValue()) + " km");
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+
+        walk.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+                if (formatDistance.contains("km")) {
+                    activityTexts[WALK_INDEX].setTextSize(12);
+                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+
+                } else {
+                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+                }
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+
+        walkI.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+
+                if (formatPercent.contains("%%")) {
+                    float percentFilled = ((currentPosition - walkI.getMinValue()) / (walkI.getMaxValue() - walkI.getMinValue()));
+                    textView.setText(String.format(formatPercent, percentFilled * 100f));
+
+                } else {
+                    textView.setText(String.format(formatPercent, currentPosition));
+                }
+
+                if (formatDistance.contains("km")) {
+                    activityTexts[WALK_INDEX].setTextSize(12);
+                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+
+                } else {
+                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+                }
+
+                textViewGoals.setText(String.format(formatDistance, currentPosition) + "/" + Float.toString(walkI.getMaxValue()) + " km");
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+
+        cal.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+
+                if (formatDistance.contains("cal")) {
+                    activityTexts[CAL_INDEX].setTextSize(12);
+                    activityTexts[CAL_INDEX].setText(String.format(formatCal, currentPosition));
+
+                } else {
+                    activityTexts[CAL_INDEX].setTextSize(12);
+                    activityTexts[CAL_INDEX].setText(String.format(formatCal, currentPosition));
+                }
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+        calI.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+
+                if (formatPercent.contains("%%")) {
+                    float percentFilled = ((currentPosition - calI.getMinValue()) / (calI.getMaxValue() - calI.getMinValue()));
+                    textView.setText(String.format(formatPercent, percentFilled * 100f));
+
+                } else {
+                    textView.setText(String.format(formatPercent, currentPosition));
+                }
+
+                if (formatDistance.contains("cal")) {
+                    activityTexts[CAL_INDEX].setTextSize(12);
+                    activityTexts[CAL_INDEX].setText(String.format(formatCal, currentPosition));
+
+                } else {
+                    activityTexts[CAL_INDEX].setTextSize(12);
+                    activityTexts[CAL_INDEX].setText(String.format(formatCal, currentPosition));
+                }
+                textViewGoals.setText(String.format(formatCal2, currentPosition) + "/" + Float.toString(calI.getMaxValue()) + " Cal");
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
+
+        sum.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
+            @Override
+            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
+
+                textViewGoals.setText("");
+
+                if (formatPercent.contains("%%")) {
+                    float percentFilled = ((currentPosition - sum.getMinValue()) / (sum.getMaxValue() - sum.getMinValue()));
+                    textView.setText(String.format(formatPercent, percentFilled * 100f));
+
+                } else {
+                    textView.setText(String.format(formatPercent, currentPosition));
+                }
+
+            }
+
+            @Override
+            public void onSeriesItemDisplayProgress(float percentComplete) {
+
+            }
+        });
     }
 
     public void restAction(int activity) {
         final Summary summary = data.getSummary();
-        final Goals goals = data.getGoals();
+
         decoView.configureAngles(280, 0);
         decoView.deleteAll();
 
-        SeriesItem seriesItem = new SeriesItem.Builder(activityColors[activity])
-                .setRange(0, 100, 0)
-                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
-                .build();
-
         decoView.addSeries(background);
-        int bikeIndex = decoView.addSeries(seriesItem);
 
-        int percent = 0;
+        int seriesIndex = 0;
 
         switch (activity) {
             case BIKE_INDEX:
-                percent = 70;
+                seriesIndex = decoView.addSeries(bikeI);
+                decoView.addSeries(bikeI);
                 break;
             case RUN_INDEX:
-                percent = 30;
+                seriesIndex = decoView.addSeries(runI);
+                decoView.addSeries(runI);
                 break;
             case WALK_INDEX:
-                percent = 50;
+                seriesIndex = decoView.addSeries(walkI);
+                decoView.addSeries(walkI);
                 break;
             case CAL_INDEX:
-                percent = 60;
+                seriesIndex = decoView.addSeries(calI);
+                decoView.addSeries(calI);
                 break;
         }
 
-        decoView.addEvent(new DecoEvent.Builder(percent).setIndex(bikeIndex).setDelay(1000).build());
+        float percent = 0;
 
-        bike.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
-            @Override
-            public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
-                if (format.contains("%%")) {
-                    float percentFilled = ((currentPosition - bike.getMinValue()) / (bike.getMaxValue() - bike.getMinValue()));
-                    textView.setText(String.format(format, percentFilled * 100f));
-                } else {
-                    textView.setText(String.format(format, currentPosition));
-                }
-            }
+        switch (activity) {
+            case BIKE_INDEX:
+                percent = 5;
+                break;
+            case RUN_INDEX:
+                percent = 0.5f;
+                break;
+            case WALK_INDEX:
+                percent = 0.2f;
+                break;
+            case CAL_INDEX:
+                percent = summary.getCaloriesOut();
+                break;
+        }
 
-            @Override
-            public void onSeriesItemDisplayProgress(float percentComplete) {
-
-            }
-        });
+        decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(1000).build());
 
     }
+
 
     public void createNotification(double burnedCalories, double targetCalories) {
         Intent intent = new Intent(getContext(), FragmentTileTwo.class);
