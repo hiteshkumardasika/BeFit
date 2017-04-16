@@ -4,10 +4,18 @@ package com.example.root.befit.fragments;
  * Created by root on 3/30/17.
  */
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,30 +27,49 @@ import com.hookedonplay.decoviewlib.charts.EdgeDetail;
 import com.hookedonplay.decoviewlib.charts.SeriesItem;
 import com.hookedonplay.decoviewlib.events.DecoEvent;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import android.content.Loader;
 import android.app.LoaderManager;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import api.models.ActivityCaloriesIntra;
+import api.models.ActivityDistanceIntra;
+import api.models.ActivityStepsIntra;
+import api.models.ActivityStepsIntraDay;
 import api.models.DailyActivitySummary;
+import api.models.DataSetIntraDay;
+import api.models.Distance;
 import api.models.Goals;
 import api.models.Summary;
+import api.services.ActivityCaloriesIntraDayService;
+import api.services.ActivityDistanceIntraDayService;
 import api.services.ActivityService;
 import api.loaders.ResourceLoaderResult;
+import api.services.ActivityStepsIntraDayService;
 
 
-public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCallbacks<ResourceLoaderResult<DailyActivitySummary>>, View.OnClickListener {
+public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
     DecoView decoView;
     TextView textView;
-
+    ImageButton refreshButton;
     ImageView bikeImage, runImage, walkImage, calImage, sumImage;
 
     protected final String TAG = getClass().getSimpleName();
-    private static final int FRAGMENT_LOADER_ID = 1;
+    private static final int DAILY_ACTIV__LOADER_ID = 1;
+    private static final int INTRA_DAY_STEPS_LOADER_ID = 2;
+    private static final int INTRA_DAY_DISTANCE_LOADER_ID = 3;
+    private static final int INTRA_DAY_CALORIES_LOADER_ID = 4;
+
 
     private static final int BIKE_INDEX = 0;
     private static final int RUN_INDEX = 1;
@@ -50,6 +77,9 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
     private static final int CAL_INDEX = 3;
 
     DailyActivitySummary data;
+    ActivityStepsIntra stepsIntraData;
+    ActivityDistanceIntra distanceIntra;
+    ActivityCaloriesIntra caloriesIntra;
 
     String format = "%.0f%%";
 
@@ -63,6 +93,127 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
 
     SeriesItem bike, run, walk, cal;
     SeriesItem background, background2, background3, background4;
+    //For Intra Day Steps
+    private LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityStepsIntra>> intraStepsLoaderCallbacks =
+            new LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityStepsIntra>>() {
+                @Override
+                public Loader<ResourceLoaderResult<ActivityStepsIntra>> onCreateLoader(int i, Bundle bundle) {
+                    return ActivityStepsIntraDayService.getDailyActivitySummaryLoader(getActivity(), new Date());
+                }
+
+                @Override
+                public void onLoadFinished(Loader<ResourceLoaderResult<ActivityStepsIntra>> loader, ResourceLoaderResult<ActivityStepsIntra> activityStepsIntraResourceLoaderResult) {
+                    switch (activityStepsIntraResourceLoaderResult.getResultType()) {
+                        case ERROR:
+                            Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                            break;
+                        case EXCEPTION:
+                            Log.e(TAG, "Error loading data", activityStepsIntraResourceLoaderResult.getException());
+                            Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                            break;
+                        default:
+                            stepsIntraData = activityStepsIntraResourceLoaderResult.getResult();
+                            loadStepsIntraDayData(stepsIntraData.getActivityStepsIntraDay());
+                    }
+                }
+
+                @Override
+                public void onLoaderReset(Loader<ResourceLoaderResult<ActivityStepsIntra>> loader) {
+
+                }
+            };
+
+    //For Intra Day Distance
+    private LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityDistanceIntra>> intraDistanceLoaderCallBacks =
+            new LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityDistanceIntra>>() {
+                @Override
+                public Loader<ResourceLoaderResult<ActivityDistanceIntra>> onCreateLoader(int i, Bundle bundle) {
+                    return ActivityDistanceIntraDayService.getDailyActivitySummaryLoader(getActivity(), new Date());
+                }
+
+                @Override
+                public void onLoadFinished(Loader<ResourceLoaderResult<ActivityDistanceIntra>> loader, ResourceLoaderResult<ActivityDistanceIntra> activityStepsIntraResourceLoaderResult) {
+                    switch (activityStepsIntraResourceLoaderResult.getResultType()) {
+                        case ERROR:
+                            Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                            break;
+                        case EXCEPTION:
+                            Log.e(TAG, "Error loading data", activityStepsIntraResourceLoaderResult.getException());
+                            Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                            break;
+                        default:
+                            distanceIntra = activityStepsIntraResourceLoaderResult.getResult();
+                            loadDistanceIntraDayData(distanceIntra.getActivityDistanceIntraDay());
+                    }
+                }
+
+                @Override
+                public void onLoaderReset(Loader<ResourceLoaderResult<ActivityDistanceIntra>> loader) {
+
+                }
+            };
+    //For IntraDay Calories
+    private LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityCaloriesIntra>> intraCaloriesLoaderCallbacks =
+            new LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityCaloriesIntra>>() {
+                @Override
+                public Loader<ResourceLoaderResult<ActivityCaloriesIntra>> onCreateLoader(int i, Bundle bundle) {
+                    return ActivityCaloriesIntraDayService.getDailyActivitySummaryLoader(getActivity(), new Date());
+                }
+
+                @Override
+                public void onLoadFinished(Loader<ResourceLoaderResult<ActivityCaloriesIntra>> loader, ResourceLoaderResult<ActivityCaloriesIntra> activityStepsIntraResourceLoaderResult) {
+                    switch (activityStepsIntraResourceLoaderResult.getResultType()) {
+                        case ERROR:
+                            Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                            break;
+                        case EXCEPTION:
+                            Log.e(TAG, "Error loading data", activityStepsIntraResourceLoaderResult.getException());
+                            Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                            break;
+                        default:
+                            caloriesIntra = activityStepsIntraResourceLoaderResult.getResult();
+                            loadCaloriesIntraDayData(caloriesIntra.getActivityCaloriesIntraDay());
+                    }
+                }
+
+                @Override
+                public void onLoaderReset(Loader<ResourceLoaderResult<ActivityCaloriesIntra>> loader) {
+
+                }
+            };
+
+    //For DailyActivitySummary Loader
+    private LoaderManager.LoaderCallbacks<ResourceLoaderResult<DailyActivitySummary>> dailyActivitySummaryLoaderCallbacks = new LoaderManager.LoaderCallbacks<ResourceLoaderResult<DailyActivitySummary>>() {
+        @Override
+        public Loader<ResourceLoaderResult<DailyActivitySummary>> onCreateLoader(int i, Bundle bundle) {
+            /*Calendar today = Calendar.getInstance();
+            today.set(2017, 04, 15);*/
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            Toast.makeText(getContext(), dateFormat.format(new Date()), Toast.LENGTH_SHORT).show();
+            return ActivityService.getDailyActivitySummaryLoader(getActivity(), new Date());
+        }
+
+        @Override
+        public void onLoadFinished(Loader<ResourceLoaderResult<DailyActivitySummary>> loader, ResourceLoaderResult<DailyActivitySummary> dailyActivitySummaryResourceLoaderResult) {
+            switch (dailyActivitySummaryResourceLoaderResult.getResultType()) {
+                case ERROR:
+                    Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                    break;
+                case EXCEPTION:
+                    Log.e(TAG, "Error loading data", dailyActivitySummaryResourceLoaderResult.getException());
+                    Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
+                    break;
+            }
+            loadData(dailyActivitySummaryResourceLoaderResult.getResult());
+        }
+
+        @Override
+        public void onLoaderReset(Loader<ResourceLoaderResult<DailyActivitySummary>> loader) {
+
+        }
+
+
+    };
 
     @Override
     public void onResume() {
@@ -84,6 +235,7 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
         View view = inflater.inflate(R.layout.fragment_tile_two, container, false);
         decoView = (DecoView) view.findViewById(R.id.dynamicArcView);
         textView = (TextView) view.findViewById(R.id.textPercentage);
+        refreshButton = (ImageButton) view.findViewById(R.id.refreshButton);
 
         bikeImage = (ImageView) view.findViewById(R.id.bikeActivity1);
         bikeImage.setOnClickListener(this);
@@ -100,32 +252,23 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
         calImage = (ImageView) view.findViewById(R.id.calActivity4);
         calImage.setOnClickListener(this);
 
-        getLoaderManager().initLoader(FRAGMENT_LOADER_ID, null, this).forceLoad();
+        getLoaderManager().initLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks).forceLoad();
+        getLoaderManager().initLoader(INTRA_DAY_STEPS_LOADER_ID, null, intraStepsLoaderCallbacks).forceLoad();
+        getLoaderManager().initLoader(INTRA_DAY_DISTANCE_LOADER_ID, null, intraDistanceLoaderCallBacks).forceLoad();
+        getLoaderManager().initLoader(INTRA_DAY_CALORIES_LOADER_ID, null, intraCaloriesLoaderCallbacks).forceLoad();
 
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getLoaderManager().restartLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks);
+                getLoaderManager().restartLoader(INTRA_DAY_STEPS_LOADER_ID, null, intraStepsLoaderCallbacks);
+            }
+        });
         return view;
 
     }
 
-    @Override
-    public Loader<ResourceLoaderResult<DailyActivitySummary>> onCreateLoader(int i, Bundle bundle) {
-        return ActivityService.getDailyActivitySummaryLoader(getActivity(), new Date());
-    }
-
-    @Override
-    public void onLoadFinished(Loader<ResourceLoaderResult<DailyActivitySummary>> loader, ResourceLoaderResult<DailyActivitySummary> dailyActivitySummaryResourceLoaderResult) {
-        switch (dailyActivitySummaryResourceLoaderResult.getResultType()) {
-            case ERROR:
-                Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
-                break;
-            case EXCEPTION:
-                Log.e(TAG, "Error loading data", dailyActivitySummaryResourceLoaderResult.getException());
-                Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
-                break;
-        }
-        loadData(dailyActivitySummaryResourceLoaderResult.getResult());
-    }
-
-    public void createArcsForSum(){
+    public void createArcsForSum() {
 
         decoView.deleteAll();
         decoView.configureAngles(280, 0);
@@ -180,14 +323,42 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
         sumAction();
     }
 
-    public void sumAction(){
+    public void loadStepsIntraDayData(ActivityStepsIntraDay activityStepsIntraDay) {
+        Log.i(TAG, "Loading the Steps Intradata");
+        for (DataSetIntraDay dataSetIntraDay : activityStepsIntraDay.getDataSetIntraDays()) {
+            Log.i(TAG, dataSetIntraDay.getTime() + " " + dataSetIntraDay.getValue());
+        }
+        Log.i(TAG, String.valueOf(activityStepsIntraDay.getDataSetInterval()));
+        Toast.makeText(getContext(), stepsIntraData.getActivitySteps().toString(), Toast.LENGTH_SHORT).show();
+    }
+
+    public void loadCaloriesIntraDayData(ActivityStepsIntraDay activityCaloriesIntraDay) {
+        Log.i(TAG, "Loading the Calories Intradata");
+        for (DataSetIntraDay dataSetIntraDay : activityCaloriesIntraDay.getDataSetIntraDays()) {
+            Log.i(TAG, dataSetIntraDay.getTime() + " " + dataSetIntraDay.getValue());
+        }
+        Log.i(TAG, String.valueOf(activityCaloriesIntraDay.getDataSetInterval()));
+        Toast.makeText(getContext(), caloriesIntra.getActivityCalories().toString(), Toast.LENGTH_SHORT).show();
+    }
+
+    public void loadDistanceIntraDayData(ActivityStepsIntraDay activityStepsIntraDay) {
+        Log.i(TAG, "Loading the Distance Intradata");
+        for (DataSetIntraDay dataSetIntraDay : activityStepsIntraDay.getDataSetIntraDays()) {
+            Log.i(TAG, dataSetIntraDay.getTime() + " " + dataSetIntraDay.getValue());
+        }
+        Log.i(TAG, String.valueOf(activityStepsIntraDay.getDataSetInterval()));
+        Toast.makeText(getContext(), distanceIntra.getActivityDistances().toString(), Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void sumAction() {
         createArcsForSum();
         //Compute calories percentage
         final Summary summary = data.getSummary();
         final Goals goals = data.getGoals();
         double calBurnt = summary.getCaloriesOut();
         double calGoal = goals.getCaloriesOut();
-        int caloriesPercentage = (int)((calBurnt/calGoal) * 100);
+        int caloriesPercentage = (int) ((calBurnt / calGoal) * 100);
 
         decoView.addSeries(background);
         decoView.addSeries(background2);
@@ -222,6 +393,7 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
 
             }
         });
+        createNotification(calBurnt, calGoal);
     }
 
     public void restAction(int activity) {
@@ -240,7 +412,7 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
 
         int percent = 0;
 
-        switch (activity){
+        switch (activity) {
             case BIKE_INDEX:
                 percent = 70;
                 break;
@@ -248,10 +420,10 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
                 percent = 30;
                 break;
             case WALK_INDEX:
-                percent =50;
+                percent = 50;
                 break;
             case CAL_INDEX:
-                percent =60;
+                percent = 60;
                 break;
         }
 
@@ -276,23 +448,65 @@ public class FragmentTileTwo extends Fragment implements LoaderManager.LoaderCal
 
     }
 
+    public void createNotification(double burnedCalories, double targetCalories) {
+        Intent intent = new Intent(getContext(), FragmentTileTwo.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Bitmap bmpImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.fitbit);
+        NotificationCompat.BigPictureStyle bpS = new NotificationCompat.BigPictureStyle().bigPicture(bmpImage);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext())
+                // Set Icon
+                .setSmallIcon(R.drawable.fitbit)
+                // Set Ticker Message
+                .setTicker("Testing")
+                // Dismiss Notification
+                .setAutoCancel(true)
+                .addAction(R.drawable.gym, "Next", pendingIntent)
+                .setStyle(bpS);
+        // Set PendingIntent into Notification
+        //.setContentIntent(pendingIntent);
+        RemoteViews notificationView = new RemoteViews(getContext().getPackageName(), R.layout.status_bar);
+        RemoteViews bigNotificationView = new RemoteViews(getContext().getPackageName(), R.layout.status_bar_expanded);
 
-    @Override
-    public void onLoaderReset(Loader<ResourceLoaderResult<DailyActivitySummary>> loader) {
+        //Log.i("FragmentTileTwo", String.valueOf(data.getActivities().get(0)));
+        List<Distance> distances = data.getSummary().getDistances();
+        Distance distance = distances.get(0);
+        for (Distance distance1 : distances) {
+            Log.i("FragmentTileTwo", String.valueOf(distance1.getActivity() + " " + distance1.getDistance()));
+        }
 
+        notificationView.setTextViewText(R.id.status_bar_track_name, String.valueOf(distance.getActivity() + distance.getDistance()));
+        bigNotificationView.setTextViewText(R.id.status_bar_track_name, String.valueOf(distance.getActivity() + distance.getDistance()));
+
+        notificationView.setTextViewText(R.id.status_bar_artist_name, String.valueOf(targetCalories));
+        bigNotificationView.setTextViewText(R.id.status_bar_artist_name, String.valueOf(targetCalories));
+
+        bigNotificationView.setTextViewText(R.id.status_bar_album_name, "CALORIES BURNT");
+
+        builder.setContent(getComplexNotificationView("CALORIES BURNT", String.valueOf(burnedCalories), notificationView));
+        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        builder.setCustomBigContentView(bigNotificationView);
+        Notification notification = builder.build();
+        notificationManager.notify(1, notification);
     }
+
+    private RemoteViews getComplexNotificationView(String contentTitle, String contentText, RemoteViews notificationView) {
+        notificationView.setTextViewText(R.id.title, contentTitle);
+        notificationView.setTextViewText(R.id.text, contentText);
+        return notificationView;
+    }
+
 
     @Override
     public void onClick(View v) {
-        if(v.getId() == bikeImage.getId()){
+        if (v.getId() == bikeImage.getId()) {
             restAction(BIKE_INDEX);
-        }else if(v.getId() == sumImage.getId()){
+        } else if (v.getId() == sumImage.getId()) {
             sumAction();
-        }else if(v.getId() == runImage.getId()){
+        } else if (v.getId() == runImage.getId()) {
             restAction(RUN_INDEX);
-        }else if(v.getId() == walkImage.getId()){
+        } else if (v.getId() == walkImage.getId()) {
             restAction(WALK_INDEX);
-        }else if(v.getId() == calImage.getId()){
+        } else if (v.getId() == calImage.getId()) {
             restAction(CAL_INDEX);
         }
     }

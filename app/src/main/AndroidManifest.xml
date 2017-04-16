@@ -9,6 +9,7 @@
         android:icon="@mipmap/befit"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:screenOrientation="portrait"
         android:theme="@style/MyMaterialTheme">
         <meta-data
             android:name="com.fitbit.befit.CLIENT_ID"
@@ -20,6 +21,7 @@
         <activity
             android:name=".FitbitStartActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Fitbit.Teal">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
