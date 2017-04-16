@@ -35,11 +35,17 @@
     <string name="error_loading_data">Error loading data. Check your internet connection and try
         again later.
     </string>
+    <string name="calendar">CALENDAR</string>
+    <string name="app_version_number">1.0</string>
+    <string name="menu_settings">Settings</string>
     <string name="fit_running">Running</string>
     <string name="fit_cycling">Cycling</string>
     <string name="fit_walking">Walking</string>
     <string name="fit_burnt">burnt</string>
     <string name="fit_sum">Total</string>
-
+    <string name="cd_repeat">Repeat one or all</string>
+    <string name="cd_previous">Skip backwards</string>
+    <string name="cd_play">Play and pause</string>
+    <string name="cd_next">Skip forwards</string>
 
 </resources>
