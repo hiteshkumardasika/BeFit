@@ -334,17 +334,12 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
                 .build();
         background2 = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
                 .setRange(0, 100, 100)
-                .setInset(new PointF(80f, 80f))
+                .setInset(new PointF(100f, 100f))
                 .setInitialVisibility(true)
                 .build();
         background3 = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
                 .setRange(0, 100, 100)
-                .setInset(new PointF(160f, 160f))
-                .setInitialVisibility(true)
-                .build();
-        background4 = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
-                .setRange(0, 100, 100)
-                .setInset(new PointF(240f, 240f))
+                .setInset(new PointF(200f, 200f))
                 .setInitialVisibility(true)
                 .build();
 
@@ -355,13 +350,13 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
                 .build();
         run = new SeriesItem.Builder(activityColors[RUN_INDEX])
                 .setRange(0, goals.run, value.run)
-                .setInset(new PointF(80f, 80f))
+                .setInset(new PointF(100f, 100f))
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
         walk = new SeriesItem.Builder(activityColors[WALK_INDEX])
                 .setRange(0, goals.walk, value.walk)
-                .setInset(new PointF(160f, 160f))
+                .setInset(new PointF(200f, 200f))
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
@@ -390,13 +385,13 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
                 .build();
         background4 = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
                 .setRange(0, 100, 100)
-                .setInset(new PointF(240f, 240f))
+                .setInset(new PointF(300f, 300f))
                 .setInitialVisibility(true)
                 .build();
 
         cal = new SeriesItem.Builder(activityColors[CAL_INDEX])
                 .setRange(0, goals.cal, value.cal)
-                .setInset(new PointF(240f, 240f))
+                .setInset(new PointF(300f, 300f))
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
