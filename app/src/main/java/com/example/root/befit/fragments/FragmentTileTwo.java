@@ -617,7 +617,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
                     activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
 
                 } else {
-                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+                    activityTexts[WALK_INDEX].setText(String.format(formatSteps, currentPosition));
                 }
 
                 textViewGoals.setText(String.format("%.2f", currentPosition) + "/" + Float.toString(walkI.getMaxValue()) + " steps");
