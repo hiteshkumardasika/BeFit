@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.content.Loader;
 import android.app.LoaderManager;
@@ -49,7 +51,6 @@ import api.models.ActivityStepsIntraDay;
 import api.models.DailyActivitySummary;
 import api.models.DataSetIntraDay;
 import api.models.Distance;
-import api.models.Goals;
 import api.models.Summary;
 import api.services.ActivityCaloriesIntraDayService;
 import api.services.ActivityDistanceIntraDayService;
@@ -58,7 +59,7 @@ import api.loaders.ResourceLoaderResult;
 import api.services.ActivityStepsIntraDayService;
 
 
-public class FragmentTileTwo extends Fragment implements View.OnClickListener {
+public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
 
     DecoView decoView;
     TextView textView, textViewGoals;
@@ -76,7 +77,8 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     private static final int RUN_INDEX = 1;
     private static final int WALK_INDEX = 2;
     private static final int CAL_INDEX = 3;
-    BeFitActivites goals;
+    private int arcView = 4;
+    BeFitActivites goals, current;
 
     private boolean sumDisplayed;
 
@@ -87,6 +89,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
     String formatPercent = "%.0f%%";
     String formatDistance = "%.2f km";
+    String formatSteps = "%.0f steps";
     String formatCal = "%.0f cal";
     String formatCal2 = "%.0f";
 
@@ -102,9 +105,11 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     SeriesItem bikeI, runI, walkI, calI;
     SeriesItem background, background2, background3, background4;
     TextView[] activityTexts;
+
     //For Intra Day Steps
     private LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityStepsIntra>> intraStepsLoaderCallbacks =
             new LoaderManager.LoaderCallbacks<ResourceLoaderResult<ActivityStepsIntra>>() {
+
                 @Override
                 public Loader<ResourceLoaderResult<ActivityStepsIntra>> onCreateLoader(int i, Bundle bundle) {
                     return ActivityStepsIntraDayService.getDailyActivitySummaryLoader(getActivity(), new Date());
@@ -112,6 +117,10 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
                 @Override
                 public void onLoadFinished(Loader<ResourceLoaderResult<ActivityStepsIntra>> loader, ResourceLoaderResult<ActivityStepsIntra> activityStepsIntraResourceLoaderResult) {
+
+                    createArcsNoCal(current);
+                    addArcListnersNoCal();
+
                     switch (activityStepsIntraResourceLoaderResult.getResultType()) {
                         case ERROR:
                             Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
@@ -123,13 +132,20 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                         default:
                             stepsIntraData = activityStepsIntraResourceLoaderResult.getResult();
                             loadStepsIntraDayData(stepsIntraData.getActivityStepsIntraDay());
+                            if(arcView != 4){
+                                restActionNoCal(arcView);
+                            }else{
+                                sumActionNoCal();
+                            }
                     }
+
                 }
 
                 @Override
                 public void onLoaderReset(Loader<ResourceLoaderResult<ActivityStepsIntra>> loader) {
 
                 }
+
             };
 
     //For Intra Day Distance
@@ -171,6 +187,10 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
                 @Override
                 public void onLoadFinished(Loader<ResourceLoaderResult<ActivityCaloriesIntra>> loader, ResourceLoaderResult<ActivityCaloriesIntra> activityStepsIntraResourceLoaderResult) {
+
+                    createArcsCal(current);
+                    addArcListnerCal();
+
                     switch (activityStepsIntraResourceLoaderResult.getResultType()) {
                         case ERROR:
                             Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
@@ -182,6 +202,11 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                         default:
                             caloriesIntra = activityStepsIntraResourceLoaderResult.getResult();
                             loadCaloriesIntraDayData(caloriesIntra.getActivityCaloriesIntraDay());
+                            if(arcView != 4){
+                                restActionCal(arcView);
+                            }else{
+                                sumActionCal();
+                            }
                     }
                 }
 
@@ -212,8 +237,8 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                     Log.e(TAG, "Error loading data", dailyActivitySummaryResourceLoaderResult.getException());
                     Toast.makeText(getActivity(), R.string.error_loading_data, Toast.LENGTH_LONG).show();
                     break;
+                default: loadData(dailyActivitySummaryResourceLoaderResult.getResult());
             }
-            loadData(dailyActivitySummaryResourceLoaderResult.getResult());
         }
 
         @Override
@@ -223,6 +248,10 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
 
     };
+
+    public LoaderManager getLoader(){
+        return  getLoaderManager();
+    }
 
     @Override
     public void onResume() {
@@ -236,8 +265,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        goals = new BeFitActivites(10,5,2,3303,(10+5+2+3303));
-
+        goals = new BeFitActivites(10,5,4000,3303);
     }
 
     @Override
@@ -272,39 +300,32 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
         calImage.setOnClickListener(this);
         activityTexts[CAL_INDEX] = (TextView) view.findViewById(R.id.textActivity4);
 
-        createArcs();
-        addArcListners();
-        getLoaderManager().initLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks).forceLoad();
+        current = new BeFitActivites(0,0,0,0);
+        decoView.deleteAll();
+        decoView.configureAngles(280, 0);
+
         getLoaderManager().initLoader(INTRA_DAY_STEPS_LOADER_ID, null, intraStepsLoaderCallbacks).forceLoad();
         getLoaderManager().initLoader(INTRA_DAY_DISTANCE_LOADER_ID, null, intraDistanceLoaderCallBacks).forceLoad();
         getLoaderManager().initLoader(INTRA_DAY_CALORIES_LOADER_ID, null, intraCaloriesLoaderCallbacks).forceLoad();
+        getLoaderManager().initLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks).forceLoad();
+
 
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getLoaderManager().restartLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks);
-                getLoaderManager().restartLoader(INTRA_DAY_STEPS_LOADER_ID, null, intraStepsLoaderCallbacks);
+                //decoView.deleteAll();
+                getLoaderManager().restartLoader(INTRA_DAY_STEPS_LOADER_ID, null, intraStepsLoaderCallbacks).forceLoad();
+                getLoaderManager().restartLoader(INTRA_DAY_DISTANCE_LOADER_ID, null, intraDistanceLoaderCallBacks).forceLoad();
+                getLoaderManager().restartLoader(INTRA_DAY_CALORIES_LOADER_ID, null, intraCaloriesLoaderCallbacks).forceLoad();
+                getLoaderManager().restartLoader(DAILY_ACTIV__LOADER_ID, null, dailyActivitySummaryLoaderCallbacks).forceLoad();
             }
         });
+
         return view;
 
     }
 
-    public void computeActivityValues() {
-        List<Distance> distances = data.getSummary().getDistances();
-
-        for (Distance distance : distances) {
-            if (distance.getActivity().equals("Walk")) {
-                System.out.println(distance.getDistance());
-            }
-        }
-
-    }
-
-    public void createArcs() {
-
-        decoView.deleteAll();
-        decoView.configureAngles(280, 0);
+    public void createArcsNoCal(BeFitActivites value) {
 
         //Create background series track
         background = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
@@ -329,87 +350,105 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
         //create dataSeries or foreground track
         bike = new SeriesItem.Builder(activityColors[BIKE_INDEX])
-                .setRange(0, 100, 0)
+                .setRange(0, goals.bike, value.bike)
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
         run = new SeriesItem.Builder(activityColors[RUN_INDEX])
-                .setRange(0, 100, 0)
+                .setRange(0, goals.run, value.run)
                 .setInset(new PointF(80f, 80f))
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
         walk = new SeriesItem.Builder(activityColors[WALK_INDEX])
-                .setRange(0, 100, 0)
+                .setRange(0, goals.walk, value.walk)
                 .setInset(new PointF(160f, 160f))
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
-        cal = new SeriesItem.Builder(activityColors[CAL_INDEX])
-                .setRange(0, 100, 0)
-                .setInset(new PointF(240f, 240f))
-                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
-                .build();
-
-        sum = new SeriesItem.Builder(activityColors[BIKE_INDEX])
-                .setRange(0, goals.sum, 0)
-                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
-                .setInitialVisibility(false)
-                .build();
-
         //For non-inner arcs
         bikeI = new SeriesItem.Builder(activityColors[BIKE_INDEX])
-                .setRange(0, goals.bike, 0)
+                .setRange(0, goals.bike, value.bike)
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
         runI = new SeriesItem.Builder(activityColors[RUN_INDEX])
-                .setRange(0, goals.run, 0)
+                .setRange(0, goals.run, value.run)
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
         walkI = new SeriesItem.Builder(activityColors[WALK_INDEX])
-                .setRange(0, goals.walk, 0)
-                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
-                .build();
-
-        calI = new SeriesItem.Builder(activityColors[CAL_INDEX])
-                .setRange(0, goals.cal, 0)
+                .setRange(0, goals.walk, value.walk)
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .build();
 
     }
 
+    public void createArcsCal(BeFitActivites value){
+        background = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
+                .setRange(0, 100, 100)
+                .setInitialVisibility(true)
+                .build();
+        background4 = new SeriesItem.Builder(Color.parseColor("#FFE2E2E2"))
+                .setRange(0, 100, 100)
+                .setInset(new PointF(240f, 240f))
+                .setInitialVisibility(true)
+                .build();
+
+        cal = new SeriesItem.Builder(activityColors[CAL_INDEX])
+                .setRange(0, goals.cal, value.cal)
+                .setInset(new PointF(240f, 240f))
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .build();
+
+        calI = new SeriesItem.Builder(activityColors[CAL_INDEX])
+                .setRange(0, goals.cal, value.cal)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .build();
+
+        sum = new SeriesItem.Builder(activityColors[BIKE_INDEX])
+                .setRange(0, goals.sum, value.sum)
+                .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
+                .setInitialVisibility(false)
+                .build();
+    }
+
     public void loadData(DailyActivitySummary data) {
         this.data = data;
-
-        if (sumDisplayed == false) {
-            sumAction();
-            sumDisplayed = true;
-            computeActivityValues();
-
-        }
         createNotification(data.getSummary().getCaloriesOut(), data.getGoals().getCaloriesOut());
     }
 
     public void loadStepsIntraDayData(ActivityStepsIntraDay activityStepsIntraDay) {
         Log.i(TAG, "Loading the Steps Intradata");
+        int totalSteps = 0;
         for (DataSetIntraDay dataSetIntraDay : activityStepsIntraDay.getDataSetIntraDays()) {
             Log.i(TAG, dataSetIntraDay.getTime() + " " + dataSetIntraDay.getValue());
+            totalSteps += dataSetIntraDay.getValue();
         }
         Log.i(TAG, String.valueOf(activityStepsIntraDay.getDataSetInterval()));
         Toast.makeText(getContext(), stepsIntraData.getActivitySteps().toString(), Toast.LENGTH_SHORT).show();
+        current.walk = totalSteps;
+        current.bike = 5;
+        current.run = 2;
+        current.updateSum();
+        //newSteps = totalSteps;
     }
 
     public void loadCaloriesIntraDayData(ActivityStepsIntraDay activityCaloriesIntraDay) {
+        int totalCal =0;
         Log.i(TAG, "Loading the Calories Intradata");
         for (DataSetIntraDay dataSetIntraDay : activityCaloriesIntraDay.getDataSetIntraDays()) {
             Log.i(TAG, dataSetIntraDay.getTime() + " " + dataSetIntraDay.getValue());
+            totalCal += dataSetIntraDay.getValue();
         }
         Log.i(TAG, String.valueOf(activityCaloriesIntraDay.getDataSetInterval()));
         Toast.makeText(getContext(), caloriesIntra.getActivityCalories().toString(), Toast.LENGTH_SHORT).show();
+        current.cal = totalCal;
+        current.updateSum();
+        //newCal = totalCal;
     }
 
     public void loadDistanceIntraDayData(ActivityStepsIntraDay activityStepsIntraDay) {
+
         Log.i(TAG, "Loading the Distance Intradata");
         for (DataSetIntraDay dataSetIntraDay : activityStepsIntraDay.getDataSetIntraDays()) {
             Log.i(TAG, dataSetIntraDay.getTime() + " " + dataSetIntraDay.getValue());
@@ -419,27 +458,34 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     }
 
 
-    public void sumAction() {
-        //Compute calories percentage
-        final Summary summary = data.getSummary();
-        final float calBurnt = summary.getCaloriesOut();
+    public void sumActionNoCal() {
+        //decoView.deleteAll();
 
         decoView.addSeries(background);
         decoView.addSeries(background2);
+        decoView.addSeries(background3);
+
         int bikeIndex = decoView.addSeries(bike);
         int runIndex = decoView.addSeries(run);
         int walkIndex = decoView.addSeries(walk);
-        int calIndex = decoView.addSeries(cal);
-        int sumIndex = decoView.addSeries(sum);
 
-        decoView.addEvent(new DecoEvent.Builder(5).setIndex(bikeIndex).setDelay(1000).build());
-        decoView.addEvent(new DecoEvent.Builder((float) (calBurnt + 5 + 0.5 + 0.2)).setIndex(sumIndex).setDelay(500).build());
-        decoView.addEvent(new DecoEvent.Builder(0.5f).setIndex(runIndex).setDelay(2000).build());
-        decoView.addEvent(new DecoEvent.Builder(0.2f).setIndex(walkIndex).setDelay(3000).build());
-        decoView.addEvent(new DecoEvent.Builder(calBurnt).setIndex(calIndex).setDelay(4000).build());
+        decoView.addEvent(new DecoEvent.Builder(current.bike).setIndex(bikeIndex).setDelay(0).build());
+        decoView.addEvent(new DecoEvent.Builder(current.run).setIndex(runIndex).setDelay(0).build());
+        decoView.addEvent(new DecoEvent.Builder(current.walk).setIndex(walkIndex).setDelay(0).build());
+
+
     }
 
-    public void addArcListners() {
+    public void sumActionCal(){
+        decoView.addSeries(background4);
+        int calIndex = decoView.addSeries(cal);
+        int sumIndex = decoView.addSeries(sum);
+        //while(noCalLoad == false){}
+        decoView.addEvent(new DecoEvent.Builder(current.cal).setIndex(calIndex).setDelay(0).build());
+        decoView.addEvent(new DecoEvent.Builder(current.sum).setIndex(sumIndex).setDelay(0).build());
+    }
+
+    public void addArcListnersNoCal() {
         bike.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
             @Override
             public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
@@ -478,7 +524,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                     activityTexts[BIKE_INDEX].setText(String.format(formatDistance, currentPosition));
                 }
 
-                textViewGoals.setText(String.format(formatDistance, currentPosition) + "/" + Float.toString(bikeI.getMaxValue()) + " km");
+                textViewGoals.setText(String.format("%.2f", currentPosition) + "/" + Float.toString(bikeI.getMaxValue()) + " km");
             }
 
             @Override
@@ -525,7 +571,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                     activityTexts[RUN_INDEX].setText(String.format(formatDistance, currentPosition));
                 }
 
-                textViewGoals.setText(String.format(formatDistance, currentPosition) + "/" + Float.toString(runI.getMaxValue()) + " km");
+                textViewGoals.setText(String.format("%.2f", currentPosition) + "/" + Float.toString(runI.getMaxValue()) + " km");
 
             }
 
@@ -540,10 +586,10 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
             public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
                 if (formatDistance.contains("km")) {
                     activityTexts[WALK_INDEX].setTextSize(12);
-                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+                    activityTexts[WALK_INDEX].setText(String.format(formatSteps, currentPosition));
 
                 } else {
-                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+                    activityTexts[WALK_INDEX].setText(String.format(formatSteps, currentPosition));
                 }
 
             }
@@ -574,7 +620,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
                     activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
                 }
 
-                textViewGoals.setText(String.format(formatDistance, currentPosition) + "/" + Float.toString(walkI.getMaxValue()) + " km");
+                textViewGoals.setText(String.format("%.2f", currentPosition) + "/" + Float.toString(walkI.getMaxValue()) + " steps");
 
             }
 
@@ -583,7 +629,9 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
             }
         });
+    }
 
+    public void addArcListnerCal(){
         cal.addArcSeriesItemListener(new SeriesItem.SeriesItemListener() {
             @Override
             public void onSeriesItemAnimationProgress(float percentComplete, float currentPosition) {
@@ -658,8 +706,6 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     }
 
     public void restAction(int activity) {
-        final Summary summary = data.getSummary();
-
         decoView.configureAngles(280, 0);
         decoView.deleteAll();
 
@@ -670,19 +716,15 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
         switch (activity) {
             case BIKE_INDEX:
                 seriesIndex = decoView.addSeries(bikeI);
-                decoView.addSeries(bikeI);
                 break;
             case RUN_INDEX:
                 seriesIndex = decoView.addSeries(runI);
-                decoView.addSeries(runI);
                 break;
             case WALK_INDEX:
                 seriesIndex = decoView.addSeries(walkI);
-                decoView.addSeries(walkI);
                 break;
             case CAL_INDEX:
                 seriesIndex = decoView.addSeries(calI);
-                decoView.addSeries(calI);
                 break;
         }
 
@@ -690,20 +732,80 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
 
         switch (activity) {
             case BIKE_INDEX:
-                percent = 5;
+                percent = current.bike;
                 break;
             case RUN_INDEX:
-                percent = 0.5f;
+                percent = current.run;
                 break;
             case WALK_INDEX:
-                percent = 0.2f;
+                percent = current.walk;
                 break;
             case CAL_INDEX:
-                percent = summary.getCaloriesOut();
+                percent = current.cal;
                 break;
         }
 
-        decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(1000).build());
+        decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(100).build());
+
+    }
+
+    public void restActionNoCal(int activity) {
+
+        int seriesIndex = 0;
+
+        switch (activity) {
+            case BIKE_INDEX:
+                decoView.addSeries(background);
+                seriesIndex = decoView.addSeries(bikeI);
+                break;
+            case RUN_INDEX:
+                decoView.addSeries(background);
+                seriesIndex = decoView.addSeries(runI);
+                break;
+            case WALK_INDEX:
+                decoView.addSeries(background);
+                seriesIndex = decoView.addSeries(walkI);
+                break;
+        }
+
+        float percent;
+
+        switch (activity) {
+            case BIKE_INDEX:
+                percent = current.bike;
+                decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(0).build());
+                break;
+            case RUN_INDEX:
+                percent = current.run;
+                decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(0).build());
+                break;
+            case WALK_INDEX:
+                percent = current.walk;
+                decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(0).build());
+                break;
+        }
+
+    }
+
+    public void restActionCal(int activity) {
+
+        int seriesIndex = 0;
+
+        switch (activity) {
+            case CAL_INDEX:
+                decoView.addSeries(background);
+                seriesIndex = decoView.addSeries(calI);
+                break;
+        }
+
+        float percent = 0;
+
+        switch (activity) {
+            case CAL_INDEX:
+                percent = current.cal;
+                decoView.addEvent(new DecoEvent.Builder(percent).setIndex(seriesIndex).setDelay(0).build());
+                break;
+        }
 
     }
 
@@ -759,15 +861,35 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v.getId() == bikeImage.getId()) {
+            createArcsNoCal(new BeFitActivites(0,0,0,0));
+            addArcListnersNoCal();
             restAction(BIKE_INDEX);
+            arcView = BIKE_INDEX;
         } else if (v.getId() == sumImage.getId()) {
-            sumAction();
+            createArcsNoCal(new BeFitActivites(0,0,0,0));
+            createArcsCal(new BeFitActivites(0,0,0,0));
+            addArcListnersNoCal();
+            addArcListnerCal();
+            decoView.deleteAll();
+            sumActionNoCal();
+            sumActionCal();
+            arcView = 4;
         } else if (v.getId() == runImage.getId()) {
+            createArcsNoCal(new BeFitActivites(0,0,0,0));
+            addArcListnersNoCal();
             restAction(RUN_INDEX);
+            arcView = RUN_INDEX;
         } else if (v.getId() == walkImage.getId()) {
+            createArcsNoCal(new BeFitActivites(0,0,0,0));
+            addArcListnersNoCal();
             restAction(WALK_INDEX);
+            arcView = WALK_INDEX;
         } else if (v.getId() == calImage.getId()) {
+            createArcsCal(new BeFitActivites(0,0,0,0));
+            addArcListnerCal();
             restAction(CAL_INDEX);
+            arcView = CAL_INDEX;
         }
     }
+
 }
