@@ -1,20 +1,42 @@
 package com.example.root.befit.reward;
 
+import java.io.Serializable;
+
 /**
  * Created by jeffrey on 15/04/17.
  */
 
-public class Reward {
+public class Reward implements Serializable {
     private String name;
     private int progressPoints;
     private int targetPoints;
     private String image;
+    private String description;
+    private boolean claimed;
 
-    public Reward(String name, int progressPoints, int targetPoints, String image) {
+    public Reward(String name, int progressPoints, int targetPoints, String image, String description) {
         this.name = name;
         this.progressPoints = progressPoints;
         this.targetPoints = targetPoints;
         this.image = image;
+        this.description = description;
+        this.claimed =false;
+    }
+
+    public boolean isClaimed() {
+        return claimed;
+    }
+
+    public void setClaimed(boolean claimed) {
+        this.claimed = claimed;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getName() {
