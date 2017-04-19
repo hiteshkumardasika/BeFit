@@ -43,12 +43,6 @@
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/status_bar_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/cd_play" />
-
-    <ImageButton
         android:id="@+id/status_bar_next"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

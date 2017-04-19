@@ -27,6 +27,7 @@ public class RewardsListAdapter extends ArrayAdapter<Reward> {
 
     Context context;
     Activity activity;
+
     public RewardsListAdapter(Activity activity, @LayoutRes int resource, @NonNull List<Reward> objects) {
         super(activity.getApplicationContext(), resource, objects);
         System.out.println("Init RewardsListAdapter");
@@ -45,17 +46,17 @@ public class RewardsListAdapter extends ArrayAdapter<Reward> {
         TextView rewardDesc = (TextView) view.findViewById(R.id.reward_desc);
 
         ImageView coupon = (ImageView) view.findViewById(R.id.coupon);
-        coupon.setImageResource(context.getResources().getIdentifier(reward.getImage(),"drawable",context.getPackageName()));
-        coupon.setOnClickListener( new View.OnClickListener() {
+        coupon.setImageResource(context.getResources().getIdentifier(reward.getImage(), "drawable", context.getPackageName()));
+        coupon.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                Toast.makeText(context,"Click Image",Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Click Image", Toast.LENGTH_LONG).show();
                 loadPhoto((ImageView) view);
             }
         });
         float percent = ((reward.getTargetPoints() - reward.getProgressPoints()) * 100.0f) / reward.getTargetPoints();
-        System.out.println("Percent:: "+ percent);
+        System.out.println("Percent:: " + percent);
         ImageView overlay = (ImageView) view.findViewById(R.id.overlay);
         int dimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (int) percent, context.getResources().getDisplayMetrics());
         overlay.getLayoutParams().height = dimensionInDp;
@@ -64,6 +65,7 @@ public class RewardsListAdapter extends ArrayAdapter<Reward> {
         rewardDesc.setText(reward.getDescription());
         return view;
     }
+
     private void loadPhoto(ImageView imageView) {
 
         ImageView tempImageView = imageView;
@@ -72,10 +74,6 @@ public class RewardsListAdapter extends ArrayAdapter<Reward> {
         AlertDialog.Builder imageDialog = new AlertDialog.Builder(activity);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 //        LayoutInflater inflater =
-        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.expand_image_dialog,null);
-        ImageView image = (ImageView) layout.findViewById(R.id.fullimage);
-        image.setImageResource(R.drawable.act_running_man);
-        imageDialog.setView(layout);
         imageDialog.show();
 //        image.setImageDrawable(tempImageView.getDrawable());
         /*

@@ -25,7 +25,6 @@ import android.widget.Toast;
 import com.example.root.befit.MainActivity;
 import com.example.root.befit.R;
 import com.example.root.befit.reward.Reward;
-import com.example.root.befit.reward.RewardDetailsActivity;
 import com.example.root.befit.reward.RewardsListAdapter;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ import java.util.ArrayList;
 public class FragmentTileOne extends Fragment {
 
     ListView rewardsLst;
-    String[] name ={"Android","ios","Blackberry"};
+    String[] name = {"Android", "ios", "Blackberry"};
     ArrayList<Reward> rewards = new ArrayList<Reward>();
 
     public FragmentTileOne() {
@@ -65,15 +64,15 @@ public class FragmentTileOne extends Fragment {
                 }
             });*/
             loadStaticData();
-            RewardsListAdapter adapter = new RewardsListAdapter(getActivity(),R.layout.rewards_item,rewards);
+            RewardsListAdapter adapter = new RewardsListAdapter(getActivity(), R.layout.rewards_item, rewards);
             rewardsLst.setAdapter(adapter);
             rewardsLst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 @Override
-                public void onItemClick(AdapterView<?> adapterView, View currentView, int position,long id) {
+                public void onItemClick(AdapterView<?> adapterView, View currentView, int position, long id) {
                     Toast.makeText(getActivity(), rewards.get(position).getName(), Toast.LENGTH_SHORT).show();
                     //TextView rewardDesc = (TextView) currentView.findViewById(R.id.reward_desc);
-                    Button claim = (Button) currentView.findViewById(R.id.claim);
+                    Button claim = (Button) currentView.findViewById(R.id.claimButton);
                     claim.setVisibility(View.VISIBLE);
                     //rewardDesc.setVisibility(View.VISIBLE);
                     //Intent rewardDetailsIntent = new Intent(getActivity(),RewardDetailsActivity.class);
@@ -92,10 +91,10 @@ public class FragmentTileOne extends Fragment {
 
     private void loadStaticData() {
         System.out.println("Loading Static Data");
-        Reward r1 = new Reward("Coupon1",100,500,"coupon","DescTest1");
-        Reward r2 = new Reward("Coupon2",100,5000,"coupon","DescTest1");
-        Reward r3 = new Reward("Coupon3",25,50,"coupon","DescTest1");
-        Reward r4 = new Reward("Coupon4",100,50000,"coupon","DescTest1");
+        Reward r1 = new Reward("Coupon1", 100, 500, "coupon", "DescTest1");
+        Reward r2 = new Reward("Coupon2", 100, 5000, "coupon", "DescTest1");
+        Reward r3 = new Reward("Coupon3", 25, 50, "coupon", "DescTest1");
+        Reward r4 = new Reward("Coupon4", 100, 50000, "coupon", "DescTest1");
         rewards.add(r1);
         rewards.add(r2);
         rewards.add(r3);
