@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 
 import com.example.root.befit.R;
 import com.example.root.befit.activites.BeFitActivites;
+import com.google.gson.Gson;
 import com.hookedonplay.decoviewlib.DecoView;
 import com.hookedonplay.decoviewlib.charts.EdgeDetail;
 import com.hookedonplay.decoviewlib.charts.SeriesItem;
@@ -236,7 +237,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        goals = new BeFitActivites(10,5,2,3303,(10+5+2+3303));
+        goals = new BeFitActivites(10, 5, 2, 3303, (10 + 5 + 2 + 3303));
 
     }
 
@@ -734,8 +735,10 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener {
             Log.i("FragmentTileTwo", String.valueOf(distance1.getActivity() + " " + distance1.getDistance()));
         }
 
-        notificationView.setTextViewText(R.id.status_bar_track_name, String.valueOf(distance.getActivity() + distance.getDistance()));
-        bigNotificationView.setTextViewText(R.id.status_bar_track_name, String.valueOf(distance.getActivity() + distance.getDistance()));
+/*
+        notificationView.setTextViewText(R.id.status_bar_track_name, (String) distanceIntra.getActivityDistances().toString());
+        bigNotificationView.setTextViewText(R.id.status_bar_track_name, (String) distanceIntra.getActivityDistances().toString());
+*/
 
         notificationView.setTextViewText(R.id.status_bar_artist_name, String.valueOf(targetCalories));
         bigNotificationView.setTextViewText(R.id.status_bar_artist_name, String.valueOf(targetCalories));
