@@ -38,7 +38,6 @@ public class FragmentTileThree extends Fragment {
     TextView textView;
     ImageView imageView;
     ExpandableListView expandableListView;
-    HashMap<String, List<String>> expandableListDetail;
     List<String> timingsList = new ArrayList<>();
     ExpandableListAdapter expandableListAdapter;
     ArrayList<String> listTitles = new ArrayList<>();
@@ -75,13 +74,13 @@ public class FragmentTileThree extends Fragment {
                     imageView = (ImageView) dialogView.findViewById(R.id.image);
                     expandableListView = (ExpandableListView) dialogView.findViewById(R.id.expandList);
                     listTitles.add("Free Times");
-                    expandableListDetail = new HashMap<String, List<String>>();
                     switch (view.getId()) {
                         case R.id.calendar:
                             textView.setText("Interests:\nCricket FootBall BasketBall");
                             imageView.setImageResource(R.drawable.calendar);
                             timingsList.add("Thursday 5.00PM - 6.00PM");
                             timingsList.add("Friday 5.00PM - 6.00PM");
+                            HashMap<String, List<String>> expandableListDetail = new HashMap<String, List<String>>();
                             expandableListDetail.put("Free Times", timingsList);
                             expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail);
                             break;
@@ -90,24 +89,27 @@ public class FragmentTileThree extends Fragment {
                             imageView.setImageResource(R.drawable.jeff_round);
                             timingsList.add("Thursady 3.00PM - 6.00PM");
                             timingsList.add("Friday 3.00PM - 6.00PM");
-                            expandableListDetail.put("Free Times", timingsList);
-                            expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail);
+                            HashMap<String, List<String>> expandableListDetail1 = new HashMap<String, List<String>>();
+                            expandableListDetail1.put("Free Times", timingsList);
+                            expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail1);
                             break;
                         case R.id.shakti:
                             textView.setText("Interests:\nSoftball FootBall Cricket");
                             imageView.setImageResource(R.drawable.shakti_round);
                             timingsList.add("Saturday 5.00PM - 6.00PM");
                             timingsList.add("Sunday 5.00PM - 6.00PM");
-                            expandableListDetail.put("Free Times", timingsList);
-                            expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail);
+                            HashMap<String, List<String>> expandableListDetail2 = new HashMap<String, List<String>>();
+                            expandableListDetail2.put("Free Times", timingsList);
+                            expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail2);
                             break;
                         case R.id.jay:
                             textView.setText("Interests:\nChess Squash Billiards");
                             imageView.setImageResource(R.drawable.jay_round);
                             timingsList.add("Saturday 2.00PM - 6.00PM");
                             timingsList.add("Sunday 2.00PM - 6.00PM");
-                            expandableListDetail.put("Free Times", timingsList);
-                            expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail);
+                            HashMap<String, List<String>> expandableListDetail3 = new HashMap<String, List<String>>();
+                            expandableListDetail3.put("Free Times", timingsList);
+                            expandableListAdapter = new CustomExpandableListAdapter(getContext(), listTitles, expandableListDetail3);
                             break;
                     }
                     dialogBuilder.setPositiveButton("Yay!!", new DialogInterface.OnClickListener() {
