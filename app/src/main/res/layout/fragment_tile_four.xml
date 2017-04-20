@@ -8,7 +8,9 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/layoutActivities">
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="11dp">
 
         <com.hookedonplay.decoviewlib.DecoView
             xmlns:custom="http://schemas.android.com/apk/res-auto"
@@ -20,24 +22,34 @@
             android:layout_marginEnd="21dp"/>
 
         <TextView
+            android:id="@+id/ScheduledTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textPercentage"
+            android:layout_centerHorizontal="true"
+            android:text="@string/calendar"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/ChangeTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Time"
+            android:layout_marginTop="16dp"
+            android:layout_below="@+id/ScheduledTime"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
             android:id="@+id/textPercentage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:text=""
-            android:textAlignment="center"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="40sp" />
+            android:textSize="18sp" />
 
-        </RelativeLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/calendar"
-        android:textSize="40dp"
-        android:textStyle="bold"
-        android:layout_centerInParent="true"/>
+    </RelativeLayout>
 
 </RelativeLayout>

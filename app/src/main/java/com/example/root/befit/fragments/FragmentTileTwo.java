@@ -87,7 +87,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
     ActivityDistanceIntra distanceIntra;
     ActivityCaloriesIntra caloriesIntra;
 
-    String formatPercent = "%.0f%%";
+    String formatPercent = "%.1f%%";
     String formatDistance = "%.2f km";
     String formatSteps = "%.0f steps";
     String formatCal = "%.0f cal";
@@ -103,7 +103,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
 
     SeriesItem bike, run, walk, cal, sum;
     SeriesItem bikeI, runI, walkI, calI;
-    SeriesItem background, background2, background3, background4;
+    SeriesItem background, background2, background3, background4, background5;
     TextView[] activityTexts;
 
     //For Intra Day Steps
@@ -389,6 +389,12 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
                 .setInitialVisibility(true)
                 .build();
 
+        background5 = new SeriesItem.Builder(Color.parseColor("#FFFFFF"))
+                .setRange(0, 100, 100)
+                .setInset(new PointF(400f, 400f))
+                .setInitialVisibility(true)
+                .build();
+
         cal = new SeriesItem.Builder(activityColors[CAL_INDEX])
                 .setRange(0, goals.cal, value.cal)
                 .setInset(new PointF(300f, 300f))
@@ -402,6 +408,8 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
 
         sum = new SeriesItem.Builder(activityColors[BIKE_INDEX])
                 .setRange(0, goals.sum, value.sum)
+                .setInset(new PointF(400f, 400f))
+                .setLineWidth(0f)
                 .addEdgeDetail(new EdgeDetail(EdgeDetail.EdgeType.EDGE_INNER, Color.parseColor("#22000000"), 0.4f))
                 .setInitialVisibility(false)
                 .build();
@@ -475,6 +483,7 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
         decoView.addSeries(background4);
         int calIndex = decoView.addSeries(cal);
         int sumIndex = decoView.addSeries(sum);
+        decoView.addSeries(background5);
         //while(noCalLoad == false){}
         decoView.addEvent(new DecoEvent.Builder(current.cal).setIndex(calIndex).setDelay(0).build());
         decoView.addEvent(new DecoEvent.Builder(current.sum).setIndex(sumIndex).setDelay(0).build());
@@ -607,9 +616,9 @@ public class FragmentTileTwo extends Fragment implements View.OnClickListener  {
                     textView.setText(String.format(formatPercent, currentPosition));
                 }
 
-                if (formatDistance.contains("km")) {
+                if (formatSteps.contains("steps")) {
                     activityTexts[WALK_INDEX].setTextSize(12);
-                    activityTexts[WALK_INDEX].setText(String.format(formatDistance, currentPosition));
+                    activityTexts[WALK_INDEX].setText(String.format(formatSteps, currentPosition));
 
                 } else {
                     activityTexts[WALK_INDEX].setText(String.format(formatSteps, currentPosition));
